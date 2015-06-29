@@ -1,0 +1,25 @@
+body{
+	font-family: 'Segoe UI', 'Helvetica', 'Sans Serif';
+	font-size: 13pt;
+}
+
+h1{
+	font-weight: 200;
+}
+
+.intro{
+
+}
+
+.intro a{
+	font-size: 32pt;
+	display: block;
+	font-weight: 200;
+	color: black;
+	text-decoration: none;
+}
+
+.remark{
+	color: #AAA;
+	font-style: italic;
+}
