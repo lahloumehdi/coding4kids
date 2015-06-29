@@ -39,20 +39,20 @@ function create() {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    //  The scrolling starfield background
+    //  l'image d'arrière plan
     starfield = game.add.tileSprite(0, 0, 800, 600, 'starfield');
 
-    //  Our bullet group
+    //  Mes balles
     bullets = game.add.group();
     bullets.enableBody = true;
     bullets.physicsBodyType = Phaser.Physics.ARCADE;
-    bullets.createMultiple(30, 'bullet');
+    bullets.createMultiple(1, 'bullet');
     bullets.setAll('anchor.x', 0.5);
     bullets.setAll('anchor.y', 1);
     bullets.setAll('outOfBoundsKill', true);
     bullets.setAll('checkWorldBounds', true);
 
-    // The enemy's bullets
+    // Les balles de l'ennemi
     enemyBullets = game.add.group();
     enemyBullets.enableBody = true;
     enemyBullets.physicsBodyType = Phaser.Physics.ARCADE;
@@ -62,50 +62,51 @@ function create() {
     enemyBullets.setAll('outOfBoundsKill', true);
     enemyBullets.setAll('checkWorldBounds', true);
 
-    //  The hero!
+    //  Le héro !
     player = game.add.sprite(400, 500, 'ship');
     player.anchor.setTo(0.5, 0.5);
     game.physics.enable(player, Phaser.Physics.ARCADE);
 
-    //  The baddies!
+    //  Les aliens!
     aliens = game.add.group();
     aliens.enableBody = true;
     aliens.physicsBodyType = Phaser.Physics.ARCADE;
 
     createAliens();
 
-    //  The score
+    //  Le score
     scoreString = 'Score : ';
     scoreText = game.add.text(10, 10, scoreString + score, { font: '34px Arial', fill: '#fff' });
 
-    //  Lives
+    //  Les vies
     lives = game.add.group();
     game.add.text(game.world.width - 100, 10, 'Lives : ', { font: '34px Arial', fill: '#fff' });
-
-    //  Text
-    stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '84px Arial', fill: '#fff' });
-    stateText.anchor.setTo(0.5, 0.5);
-    stateText.visible = false;
-
-    for (var i = 0; i < 3; i++) 
+     for (var i = 0; i < 3; i++) 
     {
         var ship = lives.create(game.world.width - 100 + (30 * i), 60, 'ship');
         ship.anchor.setTo(0.5, 0.5);
         ship.angle = 90;
         ship.alpha = 0.4;
     }
+    
+    //  Texte
+    stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '84px Arial', fill: '#fff' });
+    stateText.anchor.setTo(0.5, 0.5);
+    stateText.visible = false;
 
-    //  An explosion pool
+   
+
+   // Les explosions
     explosions = game.add.group();
     explosions.createMultiple(30, 'kaboom');
     explosions.forEach(setupInvader, this);
 
-    //  And some controls to play the game with
+    //  gestions du clavier
     cursors = game.input.keyboard.createCursorKeys();
     fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     
 }
-
+// creation des aliens
 function createAliens () {
 
     for (var y = 0; y < 4; y++)
@@ -137,16 +138,16 @@ function setupInvader (invader) {
     invader.animations.add('kaboom');
 
 }
-
+var descendLvl=1;
 function descend() {
 
-    aliens.y += 10;
+    aliens.y +=( 10*descendLvl );
 
 }
 
 function update() {
 
-    //  Scroll the background
+    //  On bouge l'arrière plan
     starfield.tilePosition.y += 2;
 
     if (player.alive)
@@ -154,6 +155,7 @@ function update() {
         //  Reset the player, then check for movement keys
         player.body.velocity.setTo(0, 0);
 
+        // Gestion des bouttons d'orientation 
         if (cursors.left.isDown)
         {
             player.body.velocity.x = -200;
@@ -162,8 +164,16 @@ function update() {
         {
             player.body.velocity.x = 200;
         }
+         if (cursors.up.isDown)
+        {
+            player.body.velocity.y= -200;
+        }
+        else if (cursors.down.isDown)
+        {
+            player.body.velocity.y = 200;
+        }
 
-        //  Firing?
+        //  L'utilisatur tire ?
         if (fireButton.isDown)
         {
             fireBullet();
@@ -192,31 +202,34 @@ function render() {
 
 function collisionHandler (bullet, alien) {
 
-    //  When a bullet hits an alien we kill them both
+    //  Quand une balle touche un alien, on le détruit
     bullet.kill();
     alien.kill();
 
-    //  Increase the score
+    //  On augmente le score
     score += 20;
     scoreText.text = scoreString + score;
 
-    //  And create an explosion :)
+    //  et on ajoute des effets spéciaux ;)  (des explosions)
     var explosion = explosions.getFirstExists(false);
     explosion.reset(alien.body.x, alien.body.y);
     explosion.play('kaboom', 30, false, true);
 
+        //Plus d'aliens ! Niveau suivant !
     if (aliens.countLiving() == 0)
     {
         score += 1000;
         scoreText.text = scoreString + score;
 
         enemyBullets.callAll('kill',this);
-        stateText.text = " You Won, \n Click to restart";
-        stateText.visible = true;
 
-        //the "click to restart" handler
+        stateText.visible = true;
+        descendLvl+=1;
+        stateText.text = " Vous avez gagner ! \n Cliquez ici pour \n aller au niveau "+descendLvl;
+             
         game.input.onTap.addOnce(restart,this);
-    }
+
+         }
 
 }
 
